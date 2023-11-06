@@ -1,0 +1,7 @@
+venv/
+tests/*/
+tests/.*
+build/
+*.egg-info/
+TAPpy/__pycache__
+TAPpy/.*
