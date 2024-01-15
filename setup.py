@@ -1,10 +1,15 @@
 import setuptools
+from distutils.core import setup,Extension
 
+from Cython.Distutils import build_ext
+from Cython.Build import cythonize
+import Cython.Compiler.Options
+Cython.Compiler.Options.annotate = True
 
 with open ("README.md","r") as f:
     long_description = f.read()
 
-setuptools.setup(
+setup(
     name = 'TAPpy',
     version = '0.0.1',
     author = 'Riley Vickers',
@@ -19,5 +24,7 @@ setuptools.setup(
     'scipy>=1.11.3',
     'pandas>=2.1.2',
     'scikit-learn>=1.3.2',
-    ]
+    'Cython>=3.0.5',
+    ],
+    ext_modules=cythonize(Extension("TAPpy.MSD",['TAPpy/MSD.pyx'],include_dirs=['TAPpy']))
 )
