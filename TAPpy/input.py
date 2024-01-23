@@ -112,8 +112,15 @@ def readLAMMPSlog(domain,file):
                             domain.systemTimeSeriesArrayColumns = line
                             while True:
                                 line = f.readline().split()
-                                if line[0] == 'Loop':
+                                if not line:
                                     break
+
+                                elif line[0] == 'Loop':
+                                    break
+                                
+                                elif len(line) != len(domain.systemTimeSeriesArrayColumns):
+                                    break    
+
                                 domain.systemTimeSeriesArray.append([float(i) for i in line])
                         elif line[0] == 'Loop':
                             break
