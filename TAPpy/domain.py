@@ -32,24 +32,32 @@ class Domain:
 
         self.molIDs = None
         self.molAtomIDs = None
+        self.nMols = None
 
         self.molTimeSeries = None
         self.comTimeSeries = None
 
         self.systemTimeSeries = None
+
+        self.sysPeShort = None
+        self.sysPeBond = None
+        self.sysPeLong = None
+        self.sysPeFix = None
+        self.sysKe = None
         
 
     def readInputs(self,dataFile,logFile,trajectoryFile,trim=False):
-        input.readLAMMPSdata(self,dataFile)
-        input.readLAMMPSlog(self,logFile)
-        input.readLAMMPStrajectory(self,trajectoryFile,trim)
         if not self.molDict:
             print('No molecular information provided, defaulting to identical analysis for all molecules.')
             self.molDict = {'mol1':len(self.molIDs)}
         else:
             stringInformation = ['{} {}'.format(self.molDict[key],key) for key in self.molDict]
+            self.nMols = [self.molDict[key] for key in self.molDict][0]
             stringInformation = ", ".join(stringInformation)
             print('Performing analysis for: {}.'.format(stringInformation))
+        input.readLAMMPSdata(self,dataFile)
+        input.readLAMMPSlog(self,logFile)
+        input.readLAMMPStrajectory(self,trajectoryFile,trim)
 
     def calcMSDWindow(self,fractionalWindow=1):
         print('Calculating MSD.')

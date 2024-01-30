@@ -155,6 +155,12 @@ def readLAMMPStrajectory(domain,file,trim=None):
                         xIndex = header.index('xu')
                         yIndex = header.index('yu')
                         zIndex = header.index('zu')
+
+                        peShortIndex = header.index('c_poteng_short')
+                        peBondIndex = header.index('c_poteng_bonded')
+                        peLongIndex = header.index('c_poteng_long')
+                        peFixIndex = header.index('c_poteng_fix')
+                        keIndex = header.index('c_kineng')
                         i+=1
                     else:
                         headerCheck = line.split()[2:]
@@ -181,6 +187,12 @@ def readLAMMPStrajectory(domain,file,trim=None):
                         xIndex = header.index('xu')
                         yIndex = header.index('yu')
                         zIndex = header.index('zu')
+
+                        peShortIndex = header.index('c_poteng_short')
+                        peBondIndex = header.index('c_poteng_bonded')
+                        peLongIndex = header.index('c_poteng_long')
+                        peFixIndex = header.index('c_poteng_fix')
+                        keIndex = header.index('c_kineng')
                         i+=1
 
     domain.timesteps = np.array(domain.timesteps)
@@ -189,6 +201,11 @@ def readLAMMPStrajectory(domain,file,trim=None):
     molTimeSeriesArray = []
     comTimeSeriesArray = []
     if os.path.isfile(file):
+        sysPeShort = 0
+        sysPeBond = 0
+        sysPeLong = 0
+        sysPeFix = 0
+        sysKe = 0
         with open(file) as f:
             for i in range(nTimesteps):
                 sys.stdout.write('\rTrajectory read {:.2f}% complete'.format((i+1)*100.0/nTimesteps))
@@ -209,6 +226,12 @@ def readLAMMPStrajectory(domain,file,trim=None):
                     atomY = float(split_line[yIndex])
                     atomZ = float(split_line[zIndex])
 
+                    atomPeShort = float(split_line[peShortIndex])
+                    atomPeBond = float(split_line[peBondIndex])
+                    atomPeLong = float(split_line[peLongIndex])
+                    atomPeFix = float(split_line[peFixIndex])
+                    atomKe = float(split_line[keIndex])
+
                     atomTimestepArray.append([molID,domain.atomTypeMasses[atomType-1],atomX,atomY,atomZ])
                     
                 atomTimestepDF = pd.DataFrame(atomTimestepArray,columns=['mol','mass','x','y','z'])
@@ -224,6 +247,11 @@ def readLAMMPStrajectory(domain,file,trim=None):
                 molTimeSeriesArray.append(molTimestepDF[['x','y','z']])
                 comTimeSeriesArray.append(comTimestepDF[['x','y','z']])
     elif os.path.isdir(file):
+        sysPeShort = 0
+        sysPeBond = 0
+        sysPeLong = 0
+        sysPeFix = 0
+        sysKe = 0
         for i in range(nTimesteps):
             readFile = file+'/'+trajFiles[i]
             with open(readFile,'rb') as f:
@@ -244,6 +272,18 @@ def readLAMMPStrajectory(domain,file,trim=None):
                     atomY = float(split_line[yIndex])
                     atomZ = float(split_line[zIndex])
 
+                    atomPeShort = float(split_line[peShortIndex])
+                    atomPeBond = float(split_line[peBondIndex])
+                    atomPeLong = float(split_line[peLongIndex])
+                    atomPeFix = float(split_line[peFixIndex])
+                    atomKe = float(split_line[keIndex])
+
+                    sysPeShort += atomPeShort
+                    sysPeBond += atomPeBond
+                    sysPeLong += atomPeLong
+                    sysPeFix += atomPeFix
+                    sysKe += atomKe
+
                     atomTimestepArray.append([molID,domain.atomTypeMasses[atomType-1],atomX,atomY,atomZ])
                   
                 atomTimestepDF = pd.DataFrame(atomTimestepArray,columns=['mol','mass','x','y','z'])
@@ -258,6 +298,13 @@ def readLAMMPStrajectory(domain,file,trim=None):
                     comTimestepDF[dimension] = comTimestepDF[dimension+'mass']/comTimestepDF['mass']
                 molTimeSeriesArray.append(molTimestepDF[['x','y','z']])
                 comTimeSeriesArray.append(comTimestepDF[['x','y','z']])
+    
+    domain.sysPeShort = sysPeShort / nTimesteps / domain.nMols
+    domain.sysPeBond = sysPeBond / nTimesteps / domain.nMols
+    domain.sysPeLong = sysPeLong / nTimesteps / domain.nMols
+    domain.sysPeFix = sysPeFix / nTimesteps / domain.nMols
+    domain.sysKe = sysKe / nTimesteps / domain.nMols
+    
     sys.stdout.write('\n')
     if atomIDcounter > 0:
         print('Used atom ID to define mol ID {0} times.'.format(atomIDcounter))
